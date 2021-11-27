@@ -12,25 +12,22 @@ import com.georgcantor.wallpaperapp.util.loadImage
 
 class GalleryAdapter(
     private val onClick: (CommonPic?) -> Unit
-) : PagingDataAdapter<CommonPic, RecyclerView.ViewHolder>(DiffCallback) {
+) : PagingDataAdapter<CommonPic, GalleryAdapter.GalleryViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = GalleryViewHolder(
         ItemPictureBinding.inflate(LayoutInflater.from(parent.context), parent, false),
         onClick
     )
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is GalleryViewHolder) getItem(position)?.let { holder.bind(it) }
+    override fun onBindViewHolder(holder: GalleryViewHolder, position: Int) {
+        getItem(position)?.let { holder.bind(it) }
     }
 
     class GalleryViewHolder(
         val binding: ItemPictureBinding,
         private val onClick: (CommonPic?) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var pic: CommonPic? = null
-
         fun bind(pic: CommonPic) {
-            this.pic = pic
             itemView.context.loadImage(pic.url, binding.image, null, R.color.gray)
             itemView.setOnClickListener { onClick(pic) }
         }
