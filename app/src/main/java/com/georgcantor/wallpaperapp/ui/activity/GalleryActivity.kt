@@ -3,7 +3,6 @@ package com.georgcantor.wallpaperapp.ui.activity
 import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
 import com.georgcantor.wallpaperapp.databinding.FragmentGalleryBinding
 import com.georgcantor.wallpaperapp.ui.activity.detail.DetailActivity
 import com.georgcantor.wallpaperapp.ui.fragment.GalleryAdapter
@@ -35,7 +34,7 @@ class GalleryActivity : BaseActivity() {
         }
 
         adapter.addLoadStateListener {
-            binding.progressBar.isVisible = it.source.refresh is LoadState.Loading
+//            binding.progressBar.isVisible = it.source.refresh is LoadState.Loading
         }
 
         binding.picturesRecycler.adapter = adapter
