@@ -121,7 +121,6 @@ class StateViewFlipper(context: Context, attrs: AttributeSet? = null) : ViewFlip
 
     fun currentState() = state
 
-    /** Метод деактивирует определенное состояние и не обрабатывает его в changeState() */
     fun disableState(vararg states: State) {
         for (state in states) {
             if (stateIsDisabled(state)) continue
@@ -139,8 +138,7 @@ class StateViewFlipper(context: Context, attrs: AttributeSet? = null) : ViewFlip
     }
 
     fun setStateLoading(fullScreen: Boolean = true) {
-        if (fullScreen)
-            changeState(State.LOADING)
+        if (fullScreen) changeState(State.LOADING)
     }
 
     fun setStateError(error: ParsedError? = null) {

@@ -6,10 +6,13 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat.START
 import androidx.core.view.isVisible
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.georgcantor.wallpaperapp.R
 import com.georgcantor.wallpaperapp.databinding.ActivityMainBinding
 import com.georgcantor.wallpaperapp.ui.activity.GalleryActivity
@@ -19,28 +22,40 @@ import com.georgcantor.wallpaperapp.ui.activity.favorites.FavoritesActivity
 import com.georgcantor.wallpaperapp.ui.activity.videos.VideosActivity
 import com.georgcantor.wallpaperapp.util.Constants.PIC_EXTRA
 import com.georgcantor.wallpaperapp.util.NetworkUtils.getNetworkLiveData
-import com.georgcantor.wallpaperapp.util.setupWithNavController
 import com.georgcantor.wallpaperapp.util.shortToast
 import com.georgcantor.wallpaperapp.util.startActivity
 import com.georgcantor.wallpaperapp.util.viewBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
-    private var currentNavController: LiveData<NavController>? = null
     private var backButtonPressedTwice = false
     private lateinit var reviewManager: ReviewManager
     private lateinit var reviewInfo: ReviewInfo
 
+    private lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        if (savedInstanceState == null) setupBottomNavigationBar()
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_container) as NavHostFragment
+        navController = navHostFragment.navController
+
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav)
+        bottomNavigationView.setupWithNavController(navController)
+
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.bmwFragment, R.id.audiFragment,  R.id.mercedesFragment))
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.navView.setNavigationItemSelectedListener(this)
         binding.navView.itemIconTintList = null
@@ -59,11 +74,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        setupBottomNavigationBar()
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
@@ -78,24 +88,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return super.onOptionsItemSelected(item)
     }
 
-    private fun setupBottomNavigationBar() {
-        val navGraphIds = listOf(R.navigation.bmw, R.navigation.audi, R.navigation.mercedes)
-
-        val controller = binding.bottomNav.setupWithNavController(
-            navGraphIds = navGraphIds,
-            fragmentManager = supportFragmentManager,
-            containerId = R.id.nav_host_container,
-            intent = intent
-        )
-
-        controller.observe(this, { navController ->
-            setupActionBarWithNavController(navController)
-        })
-        currentNavController = controller
-    }
-
     override fun onSupportNavigateUp(): Boolean {
-        return currentNavController?.value?.navigateUp() ?: false
+        return navController.navigateUp(appBarConfiguration)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -118,7 +112,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when {
             binding.drawerLayout.isDrawerOpen(START) -> binding.drawerLayout.closeDrawer(START)
             else -> {
-                when (currentNavController?.value?.currentDestination?.label) {
+                when (navController.currentDestination?.label) {
                     getString(R.string.bmw) -> {
                         if (backButtonPressedTwice) {
                             super.onBackPressed()
